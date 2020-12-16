@@ -13,10 +13,10 @@ I tried to keep the names and links in the comments when possible.
 In latest MacOS Catalina 10.15.7+ the default shell is zsh so after installing homebrew
 * oh-my-zsh with ```curl -fsSL --output omz_installer.sh
 https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh```
-* install [Powerlevel10k] (https://github.com/romkatv/powerlevel10k#oh-my-zsh)
-* install [Menlo LGS Fonts] (https://github.com/romkatv/powerlevel10k#meslo-nerd-font-patched-for-powerlevel10k) 
+* install [Powerlevel10k](https://github.com/romkatv/powerlevel10k#oh-my-zsh)
+* install [Menlo LGS Fonts](https://github.com/romkatv/powerlevel10k#meslo-nerd-font-patched-for-powerlevel10k) 
 * run ```p10k configure```
-* install [zsh-autosuggestions] (https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md#oh-my-zsh)
-* install [zsh-syntax-highlighting] (https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
+* install [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md#oh-my-zsh)
+* install [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
 * in .zshrc add/edit ```plugins=( git zsh-syntax-highlighting zsh-autosuggestions)```
 
