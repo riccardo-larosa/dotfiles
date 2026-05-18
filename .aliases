@@ -1,47 +1,45 @@
-# Easier navigation: .., ..., ~ and -
+# Navigation
 alias ..="cd .."
+alias ...="cd ../.."
 alias cd..="cd .."
-alias cdt="cd ~/Google\ Drive/Projects/tech"
 
-# mv, rm, cp
+# Safe file operations (verbose + confirm on rm)
 alias mv='mv -v'
 alias rm='rm -i -v'
 alias cp='cp -v'
 
-alias hosts='sudo $EDITOR /etc/hosts'   
+# System
+alias hosts='sudo $EDITOR /etc/hosts'
 
-# Always enable colored `grep` output
+# Grep with color
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
-###
-# time to upgrade `ls`
-
-# use coreutils `ls` if possible…
+# ls - use coreutils `gls` if available
 hash gls >/dev/null 2>&1 || alias gls="ls"
-
-# always use color, even when piping (to awk,grep,etc)
 if gls --color > /dev/null 2>&1; then colorflag="--color"; else colorflag="-G"; fi;
 export CLICOLOR_FORCE=1
 
-# ls options: A = include hidden (but not . or ..), F = put `/` after folders, h = byte unit suffixes
 alias ls='gls -AFh ${colorflag} --group-directories-first'
-alias lsd='ls -l | grep "^d"' # only directories
-alias la='ls -al' 
-###
+alias la='ls -al'
+alias lsd='ls -l | grep "^d"'  # only directories
 
-
-# wget sucks with certificates. Let's keep it simple.
-alias wget="curl -O"  
-
-# Recursively delete `.DS_Store` files
-alias diskspace_report="df -P -kHl"
-alias free_diskspace_report="diskspace_report"
-
+# Disk
+alias diskspace="df -P -kHl"
 
 # File size
 alias fs="stat -f \"%z bytes\""
 
-# Sublime
-alias subl="/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl"
+# Networking
+alias ip="curl -s ifconfig.me"
+alias localip="ipconfig getifaddr en0"
+
+# Git shortcuts (supplement oh-my-zsh git plugin)
+alias gs='git status'
+alias gd='git diff'
+alias gl='git log --oneline -20'
+
+# Quick edit configs
+alias zshrc='$EDITOR ~/.zshrc'
+alias aliases='$EDITOR ~/.aliases'
