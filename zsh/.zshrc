@@ -21,10 +21,12 @@ export EDITOR="cursor"
 
 # nvm (lazy-loaded for fast shell startup)
 export NVM_DIR="$HOME/.nvm"
+# Add default node bin to PATH so global npm binaries are available without triggering nvm init
+[ -s "$NVM_DIR/alias/default" ] && export PATH="$NVM_DIR/versions/node/v$(cat $NVM_DIR/alias/default)/bin:$PATH"
 nvm() {
   unset -f nvm node npm npx pnpm
-  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
-  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
   nvm "$@"
 }
 node() { nvm use default >/dev/null 2>&1; unset -f node; node "$@"; }
