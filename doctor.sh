@@ -67,6 +67,25 @@ for t in git zsh jq rg gh; do
   have "$t" && ok "$t" || warn "$t not on PATH"
 done
 
+# --- herdr (terminal workspace manager for agents; replaces tmux) -------------
+section "herdr"
+if have herdr; then
+  ok "herdr on PATH ($(herdr --version 2>/dev/null | head -1))"
+  if hout="$(herdr config check 2>&1)"; then
+    ok "config.toml valid"
+  else
+    fail "herdr config check failed: $hout"
+  fi
+  [ -f "$HOME/.pi/agent/extensions/herdr-agent-state.ts" ] && ok "pi integration installed" \
+    || warn "pi integration missing (run: herdr integration install pi)"
+  if [ -d "$HOME/.claude" ]; then
+    [ -f "$HOME/.claude/hooks/herdr-agent-state.sh" ] && ok "claude integration installed" \
+      || warn "claude integration missing (run: herdr integration install claude)"
+  fi
+else
+  warn "herdr not on PATH (install: curl -fsSL https://herdr.dev/install.sh | sh, or brew install herdr)"
+fi
+
 # --- pi (primary agent) ------------------------------------------------------
 # Never call `pi list` here: it installs missing packages as a side effect.
 section "pi"
@@ -86,10 +105,6 @@ if have jq && [ -f "$PI_SETTINGS" ]; then
     esac
     [ -d "$dir" ] && ok "package installed: $pkg" || warn "package declared but not installed: $pkg (run: pi update --extensions)"
   done < <(jq -r '.packages[]? | if type=="string" then . else .source // empty end' "$PI_SETTINGS")
-fi
-if have herdr; then
-  [ -f "$HOME/.pi/agent/extensions/herdr-agent-state.ts" ] && ok "herdr integration installed for pi" \
-    || warn "herdr is installed but its pi integration is not (run: herdr integration install pi)"
 fi
 
 # --- Config sanity -----------------------------------------------------------
