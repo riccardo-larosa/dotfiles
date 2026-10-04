@@ -1,6 +1,6 @@
 # Third-party notices
 
-Provenance for tracked files that are not original work: `pi/extensions/` and `claude/skills/`.
+Provenance for tracked files that are not original work: `pi/extensions/` and `agents/skills/`.
 
 ## pi/extensions/statusline-pi.ts
 
@@ -38,7 +38,7 @@ SOFTWARE.
 No upstream counterpart was found (checked luongnv89/pi-extensions). Treated as
 original. If it was adapted from something, record the source here.
 
-## claude/skills/defining-product-vision
+## agents/skills/defining-product-vision
 
 Derived from the `defining-product-vision` skill in
 [RefoundAI/lenny-skills](https://github.com/RefoundAI/lenny-skills) (86 product
@@ -77,7 +77,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## claude/skills/eng-org-design
+## agents/skills/eng-org-design
 
 Adapted and modified by the repo owner from content found on GitHub. The
 original source and its license are not known, and searches did not find it.

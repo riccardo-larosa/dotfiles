@@ -2,7 +2,8 @@
   "lastChangelogVersion": "1.0.0",
   "packages": [
     "npm:@plannotator/pi-extension",
-    "https://github.com/davebcn87/pi-autoresearch"
+    "https://github.com/davebcn87/pi-autoresearch",
+    "git:github.com/obra/superpowers"
   ],
   "defaultProvider": "anthropic",
   "defaultModel": "claude-fable-5",

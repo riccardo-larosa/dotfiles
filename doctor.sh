@@ -107,6 +107,51 @@ if have jq && [ -f "$PI_SETTINGS" ]; then
   done < <(jq -r '.packages[]? | if type=="string" then . else .source // empty end' "$PI_SETTINGS")
 fi
 
+# --- Agent skills: one copy in ~/.agents/skills, seen by every agent ----------
+# pi and Codex read ~/.agents/skills directly. Claude Code reads only
+# ~/.claude/skills, so each skill needs a link there.
+section "Agent skills"
+unlinked=""
+for s in "$HOME"/.agents/skills/*/; do
+  [ -d "$s" ] || continue
+  name="$(basename "$s")"
+  [ -e "$HOME/.claude/skills/$name" ] || unlinked="$unlinked $name"
+done
+if [ -z "$unlinked" ]; then
+  ok "every skill in ~/.agents/skills is linked into ~/.claude/skills"
+else
+  warn "not visible to Claude Code:$unlinked (run: skills-update <name>, or ./install.sh for agents/skills/)"
+fi
+extra=$(find "$HOME/.pi/agent/skills" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l | tr -d ' ')
+if [ "$extra" -eq 0 ]; then
+  ok "~/.pi/agent/skills is empty (pi reads ~/.agents/skills)"
+else
+  warn "$extra entries in ~/.pi/agent/skills duplicate ~/.agents/skills (delete them; pi warns on duplicate names)"
+fi
+# Superpowers comes from each agent's own plugin, which adds a session-start
+# hook. Its skills must not also be in the lock, or they load twice.
+if have jq; then
+  if jq -e '[.skills[] | select(.source == "obra/superpowers")] | length > 0' "$HOME/.agents/.skill-lock.json" >/dev/null 2>&1; then
+    warn "obra/superpowers skills in the lock duplicate the superpowers plugins (remove: npx skills remove <name> -g -y)"
+  else
+    ok "no superpowers skills in the lock"
+  fi
+  jq -e '.enabledPlugins["superpowers@superpowers-marketplace"] == true' "$HOME/.claude/settings.json" >/dev/null 2>&1 \
+    && ok "superpowers: Claude Code plugin enabled" \
+    || warn "superpowers: Claude Code plugin not enabled (claude/settings.json enabledPlugins)"
+  jq -e '.packages | map(if type=="string" then . else .source end) | index("git:github.com/obra/superpowers")' "$PI_SETTINGS" >/dev/null 2>&1 \
+    && ok "superpowers: pi package declared" \
+    || warn "superpowers: pi package not declared (run: pi install git:github.com/obra/superpowers)"
+fi
+# Codex loads catalog plugins from the ChatGPT account (remote_plugin), so a
+# local `codex plugin add` is ignored. Check what the model sees instead;
+# `codex debug prompt-input` writes nothing.
+if have codex; then
+  codex debug prompt-input "x" 2>/dev/null | grep -q 'superpowers:using-superpowers' \
+    && ok "superpowers: Codex loads the plugin" \
+    || warn "superpowers: Codex doesn't load it (in codex, run /plugins and install Superpowers)"
+fi
+
 # --- Config sanity -----------------------------------------------------------
 section "Config"
 for f in .zshrc .zprofile; do

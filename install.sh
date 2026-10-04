@@ -108,16 +108,20 @@ link "$DOTFILES/claude/settings.json"           "$HOME/.claude/settings.json"
 link "$DOTFILES/claude/CLAUDE.md"               "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES/claude/statusline-command.sh"   "$HOME/.claude/statusline-command.sh"
 link "$DOTFILES/claude/usage-aggregator.py"     "$HOME/.claude/usage-aggregator.py"
-for skill in "$DOTFILES"/claude/skills/*/; do
-  name="$(basename "$skill")"
-  link "$DOTFILES/claude/skills/$name" "$HOME/.claude/skills/$name"
-done
 
-# Agent skills manifest (~/.agents). Skill contents are third-party and are
-# restored from this lock file, not vendored (see README).
+# Agent skills (~/.agents/skills, read by pi and Codex; Claude Code needs a link
+# per skill in ~/.claude/skills). Third-party skills are restored from the lock
+# file, not vendored (see README). Our own skills in agents/skills/ are linked
+# into both places.
 echo ""
 echo "Agent skills:"
 link "$DOTFILES/agents/.skill-lock.json" "$HOME/.agents/.skill-lock.json"
+for skill in "$DOTFILES"/agents/skills/*/; do
+  [ -d "$skill" ] || continue
+  name="$(basename "$skill")"
+  link "$DOTFILES/agents/skills/$name" "$HOME/.agents/skills/$name"
+  link "$DOTFILES/agents/skills/$name" "$HOME/.claude/skills/$name"
+done
 
 echo ""
 if [ "$CHECK" -eq 1 ]; then

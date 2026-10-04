@@ -18,7 +18,7 @@ On a fresh machine, do things in this order:
 2. Install the rest of the [prerequisites](#prerequisites) (oh-my-zsh, plugins, uv, nvm, herdr, pi).
 3. `./install.sh`, then open a new shell.
 4. Restore pi's packages: `pi update --extensions`. Then `herdr integration install pi` (and `claude` if you use it). See [pi](#pi) and [herdr](#herdr).
-5. Restore agent skills with `skills-update` (see [Agent skills](#agent-skills-agents)).
+5. Restore agent skills with `skills-update`. If `doctor.sh` says Codex doesn't load superpowers, run `/plugins` in `codex` and install it (see [Agent skills](#agent-skills-agents)).
 6. `./doctor.sh` to confirm everything is wired up.
 
 ## Health check
@@ -57,7 +57,7 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 | `.functions` | Shell functions (`cdf` — cd to Finder window, `skills-update` — install or update agent skills) |
 | `herdr/` | herdr config, symlinked into `~/.config/herdr` (see [herdr](#herdr)) |
 | `pi/` | pi settings and local extensions, symlinked into `~/.pi/agent` (see [pi](#pi)) |
-| `agents/` | Agent skills manifest `.skill-lock.json` (see below) |
+| `agents/` | Agent skills: the `.skill-lock.json` manifest and our own skills in `skills/` (see below) |
 | `claude/` | Claude Code config, symlinked into `~/.claude` (secondary, see below) |
 | `NOTICES.md` | Provenance and license notices for third-party files |
 | `Brewfile` | Homebrew packages (`brew bundle`) |
@@ -95,8 +95,9 @@ Extensions are linked one file at a time because `~/.pi/agent/extensions/` also 
 
 - `npm:@plannotator/pi-extension`
 - `https://github.com/davebcn87/pi-autoresearch`
+- `git:github.com/obra/superpowers` (see [Agent skills](#agent-skills-agents))
 
-On a new machine run `pi update --extensions`. I tested this against a directory holding only `settings.json`: pi installed both packages. Plannotator depends on `node-pty`, and npm warns that its install script isn't approved yet; I haven't verified plannotator runs after a restore.
+On a new machine run `pi update --extensions`. I tested this against a directory holding only `settings.json`: pi installed both packages. Superpowers was added later and hasn't been through that test. Plannotator depends on `node-pty`, and npm warns that its install script isn't approved yet; I haven't verified plannotator runs after a restore.
 
 `pi list` also installs any missing declared package as a side effect, so use it for inspection only when you're fine with that. `doctor.sh` checks the package directories on disk instead.
 
@@ -115,35 +116,43 @@ pi also reads skills from `~/.agents/skills`; see below.
 
 ## Agent skills (`~/.agents`)
 
-`~/.agents/skills` is the source for skills shared by pi and Claude Code (`~/.claude/skills/*` and `~/.pi/agent/skills/*` are symlinks into it).
+Every skill lives in one place, `~/.agents/skills`. pi and Codex read it directly. Claude Code reads only `~/.claude/skills`, so each skill gets a symlink there. `~/.pi/agent/skills` stays empty, because links there would duplicate what pi already reads. `doctor.sh` checks all three.
 
-Every skill in there is third-party (obra/superpowers, mattpocock/skills, herdrdev/herdr, ...), so none are vendored. Only the manifest, `agents/.skill-lock.json`, is tracked; `install.sh` links it. It records each skill's source repo.
+| Skills | Source | How they get into `~/.agents/skills` |
+|---|---|---|
+| Third-party (mattpocock/skills, herdrdev/herdr, cursor/plugins, anthropics/skills, ...) | `agents/.skill-lock.json` records each source repo. Contents are not vendored | `skills-update` |
+| Our own | `agents/skills/` in this repo. Provenance is in [`NOTICES.md`](NOTICES.md) | `install.sh` links each one into `~/.agents/skills` and `~/.claude/skills` |
 
-Restore or update with `skills-update` from `.functions`:
+Restore or update third-party skills with `skills-update` from `.functions`:
 
 ```bash
 skills-update            # install or update every skill in the lock file
 skills-update unslop     # just the named skills
 ```
 
-It runs `npx -y skills add <source> -g -a codex -s <name> -y` for each lock entry. The CLI rewrites `skillFolderHash` in the lock file, so commit the diff after an update.
+It runs `npx -y skills add <source> -g -a codex claude-code -s <name> -y` for each lock entry. The CLI installs the skill into `~/.agents/skills` and links it into `~/.claude/skills`. It also rewrites `skillFolderHash` in the lock file, so commit the diff after an update.
 
-- Don't use `npx skills update`. It reinstalls with `-g -y` and no `-a`, so the CLI links each skill into every agent dotdir it detects.
-- `-a codex` is deliberate. Codex reads `~/.agents/skills` directly, so this installs only there. Without `-a`, the CLI symlinks every skill into ~60 other agents' dotdirs under `~/`. `-a claude-code` and `-a pi` write to `~/.claude/skills` and `~/.pi` instead.
+- Add a new skill with `npx skills add <repo> -g -a codex claude-code -s <name> -y`, then commit the lock diff (the CLI writes through the symlink).
+- Always pass `-a codex claude-code`. `codex` installs into `~/.agents/skills`, and `claude-code` adds the link. Without `-a`, the CLI links into every agent it detects. On this machine that means extra links in `~/.pi/agent/skills`. Cursor, Gemini, Copilot and opencode read `~/.agents/skills`, so the CLI writes nothing for them.
+- Don't use `npx skills update`. It reinstalls with `-g -y` and no `-a`, with the result above.
 - `</dev/null` is required, otherwise `npx` swallows the loop's input and only the first skill installs.
 - **Restore is not a pin.** `skills add` installs the latest upstream version, not the one in `skillFolderHash`, so restored skills can differ from the ones you had.
-- To expose a skill to Claude Code, symlink it: `ln -s ../../.agents/skills/<name> ~/.claude/skills/<name>`.
-- Add a new skill with `npx skills add <repo> -g -a codex -s <name> -y`; the CLI updates the lock file (it writes through the symlink), then commit the change.
 
-**unslop is applied through global instructions.** It comes from [cursor/plugins](https://github.com/cursor/plugins/tree/main/pstack/skills/unslop) and sets `disable-model-invocation: true`, so neither agent loads it on its own. `pi/AGENTS.md` tells pi to read it, and `claude/CLAUDE.md` imports it with `@~/.agents/skills/unslop/SKILL.md`. Both point at the installed copy, so `skills-update unslop` is the only upkeep.
+**Superpowers is not in the lock.** It ships a plugin for each agent, and each plugin adds a startup hook that loads `using-superpowers` into every session. The pi package also tells the model which pi tools replace Claude's `Skill`, `Task` and `TodoWrite`. Install it per agent:
+
+- Claude Code: `superpowers@superpowers-marketplace` in `enabledPlugins` (`claude/settings.json`).
+- pi: `git:github.com/obra/superpowers` in `pi/settings.json`. `pi update --extensions` restores it.
+- Codex: run `/plugins` inside `codex` and install Superpowers. That installs it on your ChatGPT account. `codex plugin add superpowers@openai-curated` looks equivalent but doesn't work. Codex loads catalog plugins from the account (`remote_plugin` feature) and ignores the local install. The catalog copy I saw was 5.1.0 (upstream is 6.4.2) and had no startup hook.
+
+Each agent updates its own copy. `doctor.sh` checks all three and warns if superpowers skills show up in the lock, where they would load twice.
+
+**unslop is applied through global instructions.** It comes from [cursor/plugins](https://github.com/cursor/plugins/tree/main/pstack/skills/unslop) and sets `disable-model-invocation: true`, so pi and Claude Code don't load it on their own. `pi/AGENTS.md` tells pi to read it, and `claude/CLAUDE.md` imports it with `@~/.agents/skills/unslop/SKILL.md`. Both point at the installed copy, so `skills-update unslop` is the only upkeep.
 
 ## Claude Code (also configured)
 
-Secondary to pi. `install.sh` links `claude/settings.json`, `CLAUDE.md` (global instructions), `statusline-command.sh`, `usage-aggregator.py` and the skills in `claude/skills/` into `~/.claude`.
+Secondary to pi. `install.sh` links `claude/settings.json`, `CLAUDE.md` (global instructions), `statusline-command.sh` and `usage-aggregator.py` into `~/.claude`. Skills come from `~/.agents/skills` (see [Agent skills](#agent-skills-agents)).
 
-Not tracked: history, sessions, telemetry, caches, installed plugins (re-installed from `enabledPlugins` in `settings.json`), `hooks/herdr-agent-state.sh` (herdr overwrites it; reinstall with `herdr integration install claude`), and third-party skills (`mcp-builder`, `visual-explainer`, etc.).
-
-Provenance and license notices for the skills in `claude/skills/` are in [`NOTICES.md`](NOTICES.md).
+Not tracked: history, sessions, telemetry, caches, installed plugins (re-installed from `enabledPlugins` in `settings.json`), `hooks/herdr-agent-state.sh` (herdr overwrites it; reinstall with `herdr integration install claude`), and `skills/synced/`. Claude Code keeps your claude.ai account skills there and rewrites the folder on sync, so they stay Claude-only.
 
 `claude/settings.json` has no machine-specific paths. The herdr hook and the statusline command use `$HOME` (both run through a shell).
 

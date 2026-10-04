@@ -13,9 +13,9 @@ dotfiles/
 ├── zsh/              # .zshrc, .zprofile, .p10k.zsh -> ~/
 ├── herdr/            # config.toml only -> ~/.config/herdr (rest of that dir is runtime state)
 ├── pi/               # PRIMARY agent: settings.json, AGENTS.md (global) + extensions/*.ts, linked into ~/.pi/agent (per-file)
-├── agents/           # ~/.agents/.skill-lock.json only; skills are third-party and restored, not vendored
-├── claude/           # SECONDARY: Claude Code config, linked into ~/.claude (settings.json, CLAUDE.md, statusline, skills/)
-├── NOTICES.md        # Provenance + license text for third-party files (pi extension, claude skills)
+├── agents/           # ~/.agents: .skill-lock.json (third-party skills, restored not vendored) + skills/ (our own)
+├── claude/           # SECONDARY: Claude Code config, linked into ~/.claude (settings.json, CLAUDE.md, statusline)
+├── NOTICES.md        # Provenance + license text for third-party files (pi extension, agents/skills)
 ├── Brewfile          # Homebrew packages (brew bundle)
 ├── doctor.sh         # Read-only health check (links, prereqs, config, repo hygiene)
 ├── install.sh        # Symlinks files into $HOME, backs up existing ones
@@ -32,15 +32,17 @@ dotfiles/
 | PATH for login shells | `zsh/.zprofile` |
 | Interactive shell config, plugins, nvm, uv | `zsh/.zshrc` |
 | Prompt appearance | `zsh/.p10k.zsh` (regenerate with `p10k configure`) |
-| Add an agent skill | `npx skills add <repo> -g -a codex -s <name> -y` (see README; never omit `-a`) |
+| Add a third-party skill | `npx skills add <repo> -g -a codex claude-code -s <name> -y` (see README; never omit `-a`) |
+| Add our own skill | `agents/skills/<name>/`, then `./install.sh` (links it into `~/.agents/skills` and `~/.claude/skills`) and a `NOTICES.md` entry if not original |
 | Restore or update agent skills | `skills-update [name...]` (in `.functions`), then commit the lock diff |
+| Superpowers | One plugin per agent, never the lock: Claude `enabledPlugins`, pi package in `pi/settings.json`, Codex `/plugins` (not `codex plugin add`, which Codex ignores) |
 | Global agent instructions | `pi/AGENTS.md` and `claude/CLAUDE.md` (both apply the unslop skill) |
 | herdr config | `herdr/config.toml` (herdr writes it through the symlink; validate with `herdr config check`) |
 | herdr/agent integrations | `herdr integration install pi\|claude` (generated files, never tracked) |
 | pi settings (packages, models, theme) | `pi/settings.json` (edit here; pi also writes it through the symlink, so commit its diffs) |
 | pi local extension | `pi/extensions/<name>.ts`, then add provenance to `NOTICES.md` if not original |
 | Restore pi packages on a new machine | `pi update --extensions` (reads `pi/settings.json`) |
-| Claude Code settings / statusline / own skills | `claude/` (edit here; `~/.claude` entries are symlinks) |
+| Claude Code settings / statusline | `claude/` (edit here; `~/.claude` entries are symlinks) |
 | Add a brew package | `Brewfile`, then `brew bundle --file=Brewfile` |
 | Link a new file into $HOME | add a `link` line in `install.sh` (`doctor.sh` checks it automatically via `install.sh --check`) |
 | Health check / verify setup | `./doctor.sh` (run after any change to `install.sh`, `zsh/`, `herdr/`, `pi/`, `claude/`, `agents/`) |
@@ -65,9 +67,11 @@ dotfiles/
 - Tracking herdr runtime state (`herdr*.sock`, `*.log`, `session.json`, `session-snapshots/`, `release-notes.json`). Only `herdr/config.toml` is tracked.
 - Linking all of `~/.pi/agent/extensions` as one directory. It also holds the herdr-generated file, so link per file.
 - Calling `pi list` from scripts or checks. It installs missing packages as a side effect; inspect the package directories on disk instead.
-- Adding a skill to `claude/skills/` or an extension to `pi/extensions/` without recording its source and license in `NOTICES.md`.
+- Adding a skill to `agents/skills/` or an extension to `pi/extensions/` without recording its source and license in `NOTICES.md`.
 - Vendoring third-party skills into this repo (public; most are MIT and need their notice). Restore them via `.skill-lock.json`; restore installs latest upstream, not a pinned version.
-- Running `skills add` without `-a codex`: it symlinks into ~60 other agents' dotdirs under `~/`.
+- Running `skills add` without `-a codex claude-code`. With no `-a`, the CLI links into every agent it detects, which adds duplicate links in `~/.pi/agent/skills`. With only `-a codex`, Claude Code never sees the skill.
 - Running `npx skills update`: it reinstalls without `-a`, with the same result. Use `skills-update`.
+- Putting skills anywhere but `~/.agents/skills`. `~/.pi/agent/skills` stays empty, and `~/.claude/skills` holds only symlinks into `~/.agents/skills` (plus `synced/`, which Claude Code manages for claude.ai account skills).
+- Adding `obra/superpowers` skills to the lock. Each agent gets superpowers from its own plugin, so lock copies would load twice. `doctor.sh` warns.
 - Editing an installed skill under `~/.agents/skills` (unslop included). The next update overwrites it.
 - Editing legacy dirs (`bash/`, `sublime/`, `iterm/`) unless asked.
