@@ -2,13 +2,49 @@
 #
 # Symlinks dotfiles to $HOME. Safe to re-run — backs up existing files.
 #
+# Usage:
+#   ./install.sh           create/refresh symlinks
+#   ./install.sh --check   read-only: verify every link, change nothing (exit 1 if any are bad)
+#
 
 DOTFILES="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_DIR="$HOME/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
 
+CHECK=0
+BAD=0
+case "${1:-}" in
+  "") ;;
+  --check) CHECK=1 ;;
+  -h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "Unknown option: $1 (try --help)" >&2; exit 2 ;;
+esac
+
 link() {
   local src="$1"
   local dest="$2"
+  local name
+  name="$(basename "$dest")"
+
+  if [ "$CHECK" -eq 1 ]; then
+    # Read-only: never create, move, or relink anything here.
+    if [ ! -L "$dest" ]; then
+      if [ -e "$dest" ]; then
+        echo "  ✗ $name: exists but is not a symlink (replaced by a regular file?)"
+      else
+        echo "  ✗ $name: missing"
+      fi
+      BAD=$((BAD + 1))
+    elif [ "$(readlink "$dest")" != "$src" ]; then
+      echo "  ✗ $name: points to $(readlink "$dest"), expected $src"
+      BAD=$((BAD + 1))
+    elif [ ! -e "$src" ]; then
+      echo "  ✗ $name: link is correct but the repo file is missing"
+      BAD=$((BAD + 1))
+    else
+      echo "  ✓ $name"
+    fi
+    return
+  fi
 
   mkdir -p "$(dirname "$dest")"
 
@@ -25,7 +61,11 @@ link() {
   echo "  ✓ $(basename "$dest")"
 }
 
-echo "Installing dotfiles from $DOTFILES"
+if [ "$CHECK" -eq 1 ]; then
+  echo "Checking dotfiles links from $DOTFILES"
+else
+  echo "Installing dotfiles from $DOTFILES"
+fi
 echo ""
 
 # Shared
@@ -60,4 +100,12 @@ echo "Agent skills:"
 link "$DOTFILES/agents/.skill-lock.json" "$HOME/.agents/.skill-lock.json"
 
 echo ""
+if [ "$CHECK" -eq 1 ]; then
+  if [ "$BAD" -gt 0 ]; then
+    echo "$BAD link(s) need attention. Run ./install.sh to fix."
+    exit 1
+  fi
+  echo "All links OK."
+  exit 0
+fi
 echo "Done! Restart your shell or run: source ~/.zshrc"
