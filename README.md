@@ -139,7 +139,11 @@ Not tracked: history, sessions, telemetry, caches, installed plugins (re-install
 
 Provenance and license notices for the skills in `claude/skills/` are in [`NOTICES.md`](NOTICES.md).
 
-`claude/settings.json` uses `$HOME` in the herdr hook and the statusline command (both run through a shell). `env.PATH` is the exception: Claude passes it through literally, so `$HOME` and `~` do not work there. `doctor.sh` warns while a `/Users/` path remains. herdr regenerates its hook entry and may re-add an absolute path when its integration is reinstalled.
+`claude/settings.json` has no machine-specific paths. The herdr hook and the statusline command use `$HOME` (both run through a shell).
+
+`env.PATH` is Homebrew plus system directories only. Claude passes `env` values through literally, so `$HOME` and `~` do not work there and it cannot name nvm or `~/.local/bin`. Claude's subprocesses therefore get Homebrew's `node@24` (declared in the `Brewfile`), not the nvm default.
+
+`doctor.sh` warns if a `/Users/` path creeps back in. herdr regenerates its hook entry and may re-add an absolute path when its integration is reinstalled.
 
 ## Legacy (not actively used)
 
