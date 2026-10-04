@@ -2,3 +2,16 @@
 cdf() {
   cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')"
 }
+
+# Install or update agent skills from the lock file: all of them, or only the
+# names given (skills-update unslop). Installs the latest upstream version.
+# Don't use `npx skills update`: it reinstalls without -a, which links every
+# skill into each agent dotdir it detects under ~/.
+skills-update() {
+  local src name
+  jq -r '.skills | to_entries[] | "\(.value.source) \(.key)"' "$HOME/.agents/.skill-lock.json" |
+    while read -r src name; do
+      if [ "$#" -gt 0 ] && [[ " $* " != *" $name "* ]]; then continue; fi
+      npx -y skills add "$src" -g -a codex -s "$name" -y </dev/null
+    done
+}

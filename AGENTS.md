@@ -12,9 +12,9 @@ dotfiles/
 ├── .functions        # Shell functions      -> ~/.functions
 ├── zsh/              # .zshrc, .zprofile, .p10k.zsh -> ~/
 ├── herdr/            # config.toml only -> ~/.config/herdr (rest of that dir is runtime state)
-├── pi/               # PRIMARY agent: settings.json + extensions/*.ts, linked into ~/.pi/agent (per-file)
+├── pi/               # PRIMARY agent: settings.json, AGENTS.md (global) + extensions/*.ts, linked into ~/.pi/agent (per-file)
 ├── agents/           # ~/.agents/.skill-lock.json only; skills are third-party and restored, not vendored
-├── claude/           # SECONDARY: Claude Code config, linked into ~/.claude (settings.json, statusline, skills/)
+├── claude/           # SECONDARY: Claude Code config, linked into ~/.claude (settings.json, CLAUDE.md, statusline, skills/)
 ├── NOTICES.md        # Provenance + license text for third-party files (pi extension, claude skills)
 ├── Brewfile          # Homebrew packages (brew bundle)
 ├── doctor.sh         # Read-only health check (links, prereqs, config, repo hygiene)
@@ -32,7 +32,9 @@ dotfiles/
 | PATH for login shells | `zsh/.zprofile` |
 | Interactive shell config, plugins, nvm, uv | `zsh/.zshrc` |
 | Prompt appearance | `zsh/.p10k.zsh` (regenerate with `p10k configure`) |
-| Add/restore an agent skill | `npx skills add <repo> -g -a codex -s <name> -y` (see README; never omit `-a`) |
+| Add an agent skill | `npx skills add <repo> -g -a codex -s <name> -y` (see README; never omit `-a`) |
+| Restore or update agent skills | `skills-update [name...]` (in `.functions`), then commit the lock diff |
+| Global agent instructions | `pi/AGENTS.md` and `claude/CLAUDE.md` (both apply the unslop skill) |
 | herdr config | `herdr/config.toml` (herdr writes it through the symlink; validate with `herdr config check`) |
 | herdr/agent integrations | `herdr integration install pi\|claude` (generated files, never tracked) |
 | pi settings (packages, models, theme) | `pi/settings.json` (edit here; pi also writes it through the symlink, so commit its diffs) |
@@ -66,4 +68,6 @@ dotfiles/
 - Adding a skill to `claude/skills/` or an extension to `pi/extensions/` without recording its source and license in `NOTICES.md`.
 - Vendoring third-party skills into this repo (public; most are MIT and need their notice). Restore them via `.skill-lock.json`; restore installs latest upstream, not a pinned version.
 - Running `skills add` without `-a codex`: it symlinks into ~60 other agents' dotdirs under `~/`.
+- Running `npx skills update`: it reinstalls without `-a`, with the same result. Use `skills-update`.
+- Editing an installed skill under `~/.agents/skills` (unslop included). The next update overwrites it.
 - Editing legacy dirs (`bash/`, `sublime/`, `iterm/`) unless asked.

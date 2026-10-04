@@ -94,6 +94,7 @@ link "$DOTFILES/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 echo ""
 echo "pi:"
 link "$DOTFILES/pi/settings.json" "$HOME/.pi/agent/settings.json"
+link "$DOTFILES/pi/AGENTS.md"     "$HOME/.pi/agent/AGENTS.md"
 for ext in "$DOTFILES"/pi/extensions/*.ts; do
   [ -e "$ext" ] || continue
   link "$ext" "$HOME/.pi/agent/extensions/$(basename "$ext")"
@@ -104,6 +105,7 @@ done
 echo ""
 echo "Claude Code:"
 link "$DOTFILES/claude/settings.json"           "$HOME/.claude/settings.json"
+link "$DOTFILES/claude/CLAUDE.md"               "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES/claude/statusline-command.sh"   "$HOME/.claude/statusline-command.sh"
 link "$DOTFILES/claude/usage-aggregator.py"     "$HOME/.claude/usage-aggregator.py"
 for skill in "$DOTFILES"/claude/skills/*/; do

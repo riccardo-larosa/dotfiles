@@ -18,7 +18,7 @@ On a fresh machine, do things in this order:
 2. Install the rest of the [prerequisites](#prerequisites) (oh-my-zsh, plugins, uv, nvm, herdr, pi).
 3. `./install.sh`, then open a new shell.
 4. Restore pi's packages: `pi update --extensions`. Then `herdr integration install pi` (and `claude` if you use it). See [pi](#pi) and [herdr](#herdr).
-5. Restore agent skills (see [Agent skills](#agent-skills-agents)).
+5. Restore agent skills with `skills-update` (see [Agent skills](#agent-skills-agents)).
 6. `./doctor.sh` to confirm everything is wired up.
 
 ## Health check
@@ -54,7 +54,7 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 | `zsh/.zprofile` | PATH additions loaded at login |
 | `zsh/.p10k.zsh` | Powerlevel10k theme config |
 | `.aliases` | Shared aliases (navigation, git, ls, etc.) |
-| `.functions` | Shell functions (`cdf` — cd to Finder window) |
+| `.functions` | Shell functions (`cdf` — cd to Finder window, `skills-update` — install or update agent skills) |
 | `herdr/` | herdr config, symlinked into `~/.config/herdr` (see [herdr](#herdr)) |
 | `pi/` | pi settings and local extensions, symlinked into `~/.pi/agent` (see [pi](#pi)) |
 | `agents/` | Agent skills manifest `.skill-lock.json` (see below) |
@@ -85,6 +85,7 @@ The integrations that report agent state are generated, not tracked. Run `herdr 
 | Repo file | What it is |
 |-----------|------------|
 | `pi/settings.json` | Packages, default and enabled models, theme, shell |
+| `pi/AGENTS.md` | Global instructions for every project. It tells pi to read and apply the unslop skill |
 | `pi/extensions/context-status.ts` | Context-window bar on its own footer line |
 | `pi/extensions/statusline-pi.ts` | Custom footer: dir, branch, context, tok/s, cost, tool count, idle time, model. Adapted from luongnv89/pi-extensions, see [`NOTICES.md`](NOTICES.md) |
 
@@ -118,22 +119,27 @@ pi also reads skills from `~/.agents/skills`; see below.
 
 Every skill in there is third-party (obra/superpowers, mattpocock/skills, herdrdev/herdr, ...), so none are vendored. Only the manifest, `agents/.skill-lock.json`, is tracked; `install.sh` links it. It records each skill's source repo.
 
-Restore on a new machine:
+Restore or update with `skills-update` from `.functions`:
 
 ```bash
-jq -r '.skills | to_entries[] | "\(.value.source) \(.key)"' ~/.agents/.skill-lock.json |
-  while read -r src name; do npx -y skills add "$src" -g -a codex -s "$name" -y </dev/null; done
+skills-update            # install or update every skill in the lock file
+skills-update unslop     # just the named skills
 ```
 
+It runs `npx -y skills add <source> -g -a codex -s <name> -y` for each lock entry. The CLI rewrites `skillFolderHash` in the lock file, so commit the diff after an update.
+
+- Don't use `npx skills update`. It reinstalls with `-g -y` and no `-a`, so the CLI links each skill into every agent dotdir it detects.
 - `-a codex` is deliberate. Codex reads `~/.agents/skills` directly, so this installs only there. Without `-a`, the CLI symlinks every skill into ~60 other agents' dotdirs under `~/`. `-a claude-code` and `-a pi` write to `~/.claude/skills` and `~/.pi` instead.
 - `</dev/null` is required, otherwise `npx` swallows the loop's input and only the first skill installs.
 - **Restore is not a pin.** `skills add` installs the latest upstream version, not the one in `skillFolderHash`, so restored skills can differ from the ones you had.
 - To expose a skill to Claude Code, symlink it: `ln -s ../../.agents/skills/<name> ~/.claude/skills/<name>`.
 - Add a new skill with `npx skills add <repo> -g -a codex -s <name> -y`; the CLI updates the lock file (it writes through the symlink), then commit the change.
 
+**unslop is applied through global instructions.** It comes from [cursor/plugins](https://github.com/cursor/plugins/tree/main/pstack/skills/unslop) and sets `disable-model-invocation: true`, so neither agent loads it on its own. `pi/AGENTS.md` tells pi to read it, and `claude/CLAUDE.md` imports it with `@~/.agents/skills/unslop/SKILL.md`. Both point at the installed copy, so `skills-update unslop` is the only upkeep.
+
 ## Claude Code (also configured)
 
-Secondary to pi. `install.sh` links `claude/settings.json`, `statusline-command.sh`, `usage-aggregator.py` and the skills in `claude/skills/` into `~/.claude`.
+Secondary to pi. `install.sh` links `claude/settings.json`, `CLAUDE.md` (global instructions), `statusline-command.sh`, `usage-aggregator.py` and the skills in `claude/skills/` into `~/.claude`.
 
 Not tracked: history, sessions, telemetry, caches, installed plugins (re-installed from `enabledPlugins` in `settings.json`), `hooks/herdr-agent-state.sh` (herdr overwrites it; reinstall with `herdr integration install claude`), and third-party skills (`mcp-builder`, `visual-explainer`, etc.).
 
