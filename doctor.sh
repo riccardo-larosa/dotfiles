@@ -113,6 +113,15 @@ for f in .zshrc .zprofile; do
   zsh -n "$DOTFILES/zsh/$f" 2>/dev/null && ok "zsh syntax: $f" || fail "zsh syntax error in zsh/$f"
 done
 bash -n "$DOTFILES/install.sh" && ok "bash syntax: install.sh" || fail "syntax error in install.sh"
+# Machine-specific paths make tracked settings non-portable. herdr regenerates its
+# hook entry in claude/settings.json and may re-add an absolute path on update.
+for f in claude/settings.json pi/settings.json; do
+  if grep -q '/Users/' "$DOTFILES/$f"; then
+    warn "hardcoded /Users/ path in $f (not portable). Claude expands \$HOME in hook/statusLine commands but not in env.PATH"
+  else
+    ok "no hardcoded home paths: $f"
+  fi
+done
 for f in claude/statusline-command.sh claude/usage-aggregator.py; do
   [ -x "$DOTFILES/$f" ] && ok "executable: $f" || fail "$f is not executable"
 done

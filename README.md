@@ -139,7 +139,7 @@ Not tracked: history, sessions, telemetry, caches, installed plugins (re-install
 
 Provenance and license notices for the skills in `claude/skills/` are in [`NOTICES.md`](NOTICES.md).
 
-`claude/settings.json` has `/Users/riccardo.larosa` paths in `env.PATH`, the hook, and the statusline command. Edit them on a machine with a different username.
+`claude/settings.json` uses `$HOME` in the herdr hook and the statusline command (both run through a shell). `env.PATH` is the exception: Claude passes it through literally, so `$HOME` and `~` do not work there. `doctor.sh` warns while a `/Users/` path remains. herdr regenerates its hook entry and may re-add an absolute path when its integration is reinstalled.
 
 ## Legacy (not actively used)
 
