@@ -81,6 +81,13 @@ link "$DOTFILES/zsh/.zshrc"     "$HOME/.zshrc"
 link "$DOTFILES/zsh/.zprofile"  "$HOME/.zprofile"
 link "$DOTFILES/zsh/.p10k.zsh"  "$HOME/.p10k.zsh"
 
+# herdr (terminal workspace manager for agents; replaces tmux). Only config.toml is tracked.
+# The rest of ~/.config/herdr is runtime state (sockets, logs, session.json, snapshots).
+# herdr writes config.toml through the symlink (e.g. `herdr config reset-keys`).
+echo ""
+echo "herdr:"
+link "$DOTFILES/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+
 # pi (primary agent). Per-file links for extensions: ~/.pi/agent/extensions also holds
 # herdr-agent-state.ts, which herdr generates and overwrites, so it must stay untracked.
 # Never track auth.json, trust.json, models-store.json, sessions/, npm/ or git/.
