@@ -53,15 +53,11 @@ for skill in "$DOTFILES"/claude/skills/*/; do
   link "$DOTFILES/claude/skills/$name" "$HOME/.claude/skills/$name"
 done
 
-# Agent skills (~/.agents). Only skills we authored are linked; third-party
-# skills are restored from .skill-lock.json (see README).
+# Agent skills manifest (~/.agents). Skill contents are third-party and are
+# restored from this lock file, not vendored (see README).
 echo ""
 echo "Agent skills:"
 link "$DOTFILES/agents/.skill-lock.json" "$HOME/.agents/.skill-lock.json"
-for skill in "$DOTFILES"/agents/skills/*/; do
-  name="$(basename "$skill")"
-  link "$DOTFILES/agents/skills/$name" "$HOME/.agents/skills/$name"
-done
 
 echo ""
 echo "Done! Restart your shell or run: source ~/.zshrc"

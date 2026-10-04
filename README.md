@@ -33,7 +33,7 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 | `.aliases` | Shared aliases (navigation, git, ls, etc.) |
 | `.functions` | Shell functions (`cdf` — cd to Finder window) |
 | `.tmux.conf` | tmux prefix remapped to C-a, mouse, 256 colors |
-| `agents/` | Agent skills in `~/.agents` (see below) |
+| `agents/` | Agent skills manifest `.skill-lock.json` (see below) |
 | `claude/` | Claude Code config, symlinked into `~/.claude` (see below) |
 | `Brewfile` | Homebrew packages (`brew bundle`) |
 | `install.sh` | Symlinks dotfiles to $HOME |
@@ -50,18 +50,20 @@ Note: `claude/settings.json` has `/Users/riccardo.larosa` paths in `env.PATH`, t
 
 `~/.agents/skills` is the source for skills shared by Claude Code and pi (`~/.claude/skills/*` and `~/.pi/agent/skills/*` are symlinks into it).
 
-Tracked here: `agents/.skill-lock.json` (the manifest) and the skills not installed from a registry (`domain-modeling`, `grilling`, `wayfinder`). `install.sh` links them.
+Every skill in there is third-party (obra/superpowers, mattpocock/skills, herdrdev/herdr, ...), so none are vendored. Only the manifest, `agents/.skill-lock.json`, is tracked; `install.sh` links it. It records each skill's source repo.
 
-The other skills are third-party and **not vendored**. Restore them from the manifest on a new machine:
+Restore on a new machine:
 
 ```bash
 jq -r '.skills | to_entries[] | "\(.value.source) \(.key)"' ~/.agents/.skill-lock.json |
-  while read -r src name; do npx -y skills add "$src" -g -s "$name" -y </dev/null; done
+  while read -r src name; do npx -y skills add "$src" -g -a codex -s "$name" -y </dev/null; done
 ```
 
-The `</dev/null` is required, otherwise `npx` swallows the rest of the loop's input and only the first skill installs.
-
-**Restore is not a pin.** `skills add` installs the latest upstream version, not the one in `skillFolderHash`, so restored skills can differ from the ones you had. If you need exact copies, vendor them into `agents/skills/`.
+- `-a codex` is deliberate. Codex reads `~/.agents/skills` directly, so this installs only there. Without `-a`, the CLI symlinks every skill into ~60 other agents' dotdirs under `~/`. `-a claude-code` and `-a pi` write to `~/.claude/skills` and `~/.pi` instead.
+- `</dev/null` is required, otherwise `npx` swallows the loop's input and only the first skill installs.
+- **Restore is not a pin.** `skills add` installs the latest upstream version, not the one in `skillFolderHash`, so restored skills can differ from the ones you had.
+- To expose a skill to Claude Code, symlink it: `ln -s ../../.agents/skills/<name> ~/.claude/skills/<name>`.
+- Add a new skill with `npx skills add <repo> -g -a codex -s <name> -y`; the CLI updates the lock file (it writes through the symlink), then commit the change.
 
 ## Legacy (not actively used)
 
