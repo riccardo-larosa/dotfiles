@@ -1,6 +1,6 @@
 # DOTFILES
 
-macOS dev environment: zsh + oh-my-zsh + powerlevel10k, tmux, Homebrew, and coding-agent config.
+macOS dev environment: zsh + oh-my-zsh + powerlevel10k, herdr (replaces tmux), Homebrew, and coding-agent config.
 **pi is the primary agent**; Claude Code is also configured (secondary).
 Files are symlinked into `$HOME` by `install.sh` (no Stow yet).
 
@@ -10,8 +10,8 @@ Files are symlinked into `$HOME` by `install.sh` (no Stow yet).
 dotfiles/
 ├── .aliases          # Shared aliases       -> ~/.aliases
 ├── .functions        # Shell functions      -> ~/.functions
-├── .tmux.conf        # tmux config          -> ~/.tmux.conf
 ├── zsh/              # .zshrc, .zprofile, .p10k.zsh -> ~/
+├── herdr/            # config.toml only -> ~/.config/herdr (rest of that dir is runtime state)
 ├── pi/               # PRIMARY agent: settings.json + extensions/*.ts, linked into ~/.pi/agent (per-file)
 ├── agents/           # ~/.agents/.skill-lock.json only; skills are third-party and restored, not vendored
 ├── claude/           # SECONDARY: Claude Code config, linked into ~/.claude (settings.json, statusline, skills/)
@@ -33,13 +33,15 @@ dotfiles/
 | Interactive shell config, plugins, nvm, uv | `zsh/.zshrc` |
 | Prompt appearance | `zsh/.p10k.zsh` (regenerate with `p10k configure`) |
 | Add/restore an agent skill | `npx skills add <repo> -g -a codex -s <name> -y` (see README; never omit `-a`) |
+| herdr config | `herdr/config.toml` (herdr writes it through the symlink; validate with `herdr config check`) |
+| herdr/agent integrations | `herdr integration install pi\|claude` (generated files, never tracked) |
 | pi settings (packages, models, theme) | `pi/settings.json` (edit here; pi also writes it through the symlink, so commit its diffs) |
 | pi local extension | `pi/extensions/<name>.ts`, then add provenance to `NOTICES.md` if not original |
 | Restore pi packages on a new machine | `pi update --extensions` (reads `pi/settings.json`) |
 | Claude Code settings / statusline / own skills | `claude/` (edit here; `~/.claude` entries are symlinks) |
 | Add a brew package | `Brewfile`, then `brew bundle --file=Brewfile` |
 | Link a new file into $HOME | add a `link` line in `install.sh` (`doctor.sh` checks it automatically via `install.sh --check`) |
-| Health check / verify setup | `./doctor.sh` (run after any change to `install.sh`, `zsh/`, `pi/`, `claude/`, `agents/`) |
+| Health check / verify setup | `./doctor.sh` (run after any change to `install.sh`, `zsh/`, `herdr/`, `pi/`, `claude/`, `agents/`) |
 
 ## CONVENTIONS
 
@@ -57,6 +59,8 @@ dotfiles/
 - Letting installers append to `zsh/.zshrc` or `zsh/.zprofile` unreviewed. Installers for
   Codex, Antigravity and similar tools add PATH lines. Review, dedupe, or move them deliberately.
 - Tracking herdr-generated files: `~/.pi/agent/extensions/herdr-agent-state.ts` and `~/.claude/hooks/herdr-agent-state.sh`. Restore with `herdr integration install pi|claude`. Only add files to `pi/` and `claude/` that we author or have attributed.
+- Re-adding tmux config. herdr replaced tmux; the old config is in git history (tag `v0.4-pi-first`).
+- Tracking herdr runtime state (`herdr*.sock`, `*.log`, `session.json`, `session-snapshots/`, `release-notes.json`). Only `herdr/config.toml` is tracked.
 - Linking all of `~/.pi/agent/extensions` as one directory. It also holds the herdr-generated file, so link per file.
 - Calling `pi list` from scripts or checks. It installs missing packages as a side effect; inspect the package directories on disk instead.
 - Adding a skill to `claude/skills/` or an extension to `pi/extensions/` without recording its source and license in `NOTICES.md`.

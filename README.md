@@ -1,6 +1,6 @@
 # dotfiles
 
-My macOS dotfiles: zsh + powerlevel10k, tmux, Homebrew packages, and coding-agent config. [pi](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) is the primary agent; Claude Code is also configured.
+My macOS dotfiles: zsh + powerlevel10k, [herdr](https://herdr.dev) for terminal workspaces, Homebrew packages, and coding-agent config. [pi](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) is the primary agent; Claude Code is also configured.
 
 ## Install
 
@@ -15,9 +15,9 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 On a fresh machine, do things in this order:
 
 1. Install Homebrew, then `brew bundle --file=Brewfile`.
-2. Install the rest of the [prerequisites](#prerequisites) (oh-my-zsh, plugins, uv, nvm, pi).
+2. Install the rest of the [prerequisites](#prerequisites) (oh-my-zsh, plugins, uv, nvm, herdr, pi).
 3. `./install.sh`, then open a new shell.
-4. Restore pi's packages: `pi update --extensions`. If you use herdr, also `herdr integration install pi`. See [pi](#pi).
+4. Restore pi's packages: `pi update --extensions`. Then `herdr integration install pi` (and `claude` if you use it). See [pi](#pi) and [herdr](#herdr).
 5. Restore agent skills (see [Agent skills](#agent-skills-agents)).
 6. `./doctor.sh` to confirm everything is wired up.
 
@@ -28,7 +28,7 @@ On a fresh machine, do things in this order:
 ./install.sh --check   # just the symlinks
 ```
 
-`doctor.sh` checks that every link points into the repo (and flags files that replaced a link, which is how a tool rewriting a linked config file shows up), looks for dangling skill links, confirms the things `.zshrc` sources unguarded exist, checks pi's packages are installed on disk, runs `brew bundle check`, validates the JSON and shell syntax, and scans tracked files for secrets and credential or local-only files. It prints failures (`✗`, exit 1) and warnings (`!`, exit 0). It writes nothing, apart from Homebrew's own cache.
+`doctor.sh` checks that every link points into the repo (and flags files that replaced a link, which is how a tool rewriting a linked config file shows up), looks for dangling skill links, confirms the things `.zshrc` sources unguarded exist, checks herdr (on PATH, `herdr config check`, agent integrations) and pi's packages on disk, runs `brew bundle check`, validates the JSON and shell syntax, and scans tracked files for secrets and credential or local-only files. It prints failures (`✗`, exit 1) and warnings (`!`, exit 0). It writes nothing, apart from Homebrew's own cache.
 
 It reads the link list from `install.sh`, so a new `link` line is checked automatically.
 
@@ -42,6 +42,7 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 - [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python)
 - [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) (Node)
+- [herdr](https://herdr.dev) — `curl -fsSL https://herdr.dev/install.sh | sh` (or `brew install herdr`). This machine uses the installer, which puts the binary in `~/.local/bin` and self-updates with `herdr update`. Use one method only: `~/.local/bin` comes before Homebrew on PATH, so the installer copy would shadow a brew one
 - pi — `npm i -g @earendil-works/pi-coding-agent` (needs Node; installs under the active nvm version)
 - `jq` (used by `claude/statusline-command.sh`, `doctor.sh` and skill restore). macOS 15+ ships one; on older macOS run `brew install jq`
 
@@ -54,7 +55,7 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 | `zsh/.p10k.zsh` | Powerlevel10k theme config |
 | `.aliases` | Shared aliases (navigation, git, ls, etc.) |
 | `.functions` | Shell functions (`cdf` — cd to Finder window) |
-| `.tmux.conf` | tmux prefix remapped to C-a, mouse, 256 colors |
+| `herdr/` | herdr config, symlinked into `~/.config/herdr` (see [herdr](#herdr)) |
 | `pi/` | pi settings and local extensions, symlinked into `~/.pi/agent` (see [pi](#pi)) |
 | `agents/` | Agent skills manifest `.skill-lock.json` (see below) |
 | `claude/` | Claude Code config, symlinked into `~/.claude` (secondary, see below) |
@@ -64,6 +65,18 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 | `.gitignore` | Keeps `.DS_Store`, `.claude/settings.local.json`, secrets out of git |
 | `install.sh` | Symlinks dotfiles to $HOME (`--check` verifies without changing anything) |
 | `doctor.sh` | Read-only health check: links, prerequisites, config, repo hygiene |
+
+## herdr
+
+[herdr](https://herdr.dev) is the terminal workspace manager for the agents (workspaces, tabs, panes, agent state). It replaces tmux.
+
+`install.sh` links `herdr/config.toml` into `~/.config/herdr/`. herdr writes that file itself (`herdr config reset-keys` edits it), and it writes through the symlink, so commit any diffs. Validate it with `herdr config check`; `doctor.sh` does this for you.
+
+Not tracked: everything else in `~/.config/herdr/` is runtime state (sockets, logs, `session.json`, `session-snapshots/`, `release-notes.json`).
+
+The integrations that report agent state are generated, not tracked. Run `herdr integration install pi` and `herdr integration install claude`. They write `~/.pi/agent/extensions/herdr-agent-state.ts` and `~/.claude/hooks/herdr-agent-state.sh`, and herdr overwrites both on update.
+
+**tmux was dropped.** Its config is in git history (tag `v0.4-pi-first` and earlier). The tmux binary is still installed; remove it with `brew uninstall tmux`. The old config remapped the prefix to `C-a`; that has not been carried over to herdr.
 
 ## pi
 
