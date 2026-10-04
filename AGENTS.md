@@ -48,6 +48,7 @@ dotfiles/
 - Letting installers append to `zsh/.zshrc` or `zsh/.zprofile` unreviewed. Installers for
   Codex, Antigravity and similar tools add PATH lines. Review, dedupe, or move them deliberately.
 - Tracking `~/.claude` runtime state or herdr-managed files (`hooks/herdr-agent-state.sh`). Only add files to `claude/` that we author.
+- Adding a skill to `claude/skills/` without recording its source and license in `claude/NOTICES.md`.
 - Vendoring third-party skills into this repo (public; most are MIT and need their notice). Restore them via `.skill-lock.json`; restore installs latest upstream, not a pinned version.
 - Running `skills add` without `-a codex`: it symlinks into ~60 other agents' dotdirs under `~/`.
 - Editing legacy dirs (`bash/`, `sublime/`, `iterm/`) unless asked.
