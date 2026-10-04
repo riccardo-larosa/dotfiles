@@ -1,6 +1,6 @@
 ---
 name: defining-product-vision
-description: Tactical advice on defining product vision from 101 product leaders (143 insights). Use when working on product vision, vision statement, product strategy, long-term vision. Category: Product Management.
+description: "Tactical advice on defining product vision from 101 product leaders (143 insights). Use when working on product vision, vision statement, product strategy, long-term vision. Category: Product Management."
 ---
 
 # Defining Product Vision
