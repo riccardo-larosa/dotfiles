@@ -14,7 +14,7 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 
 ## Prerequisites
 
-- [Homebrew](https://brew.sh/)
+- [Homebrew](https://brew.sh/), then install packages with `brew bundle --file=Brewfile`
 - [Oh My Zsh](https://ohmyz.sh/) — `sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"`
 - [Powerlevel10k](https://github.com/romkatv/powerlevel10k#oh-my-zsh)
 - [MesloLGS Nerd Font](https://github.com/romkatv/powerlevel10k#meslo-nerd-font-patched-for-powerlevel10k)
@@ -33,6 +33,7 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 | `.aliases` | Shared aliases (navigation, git, ls, etc.) |
 | `.functions` | Shell functions (`cdf` — cd to Finder window) |
 | `.tmux.conf` | tmux prefix remapped to C-a, mouse, 256 colors |
+| `Brewfile` | Homebrew packages (`brew bundle`) |
 | `install.sh` | Symlinks dotfiles to $HOME |
 
 ## Legacy (not actively used)
