@@ -33,6 +33,7 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 | `.aliases` | Shared aliases (navigation, git, ls, etc.) |
 | `.functions` | Shell functions (`cdf` — cd to Finder window) |
 | `.tmux.conf` | tmux prefix remapped to C-a, mouse, 256 colors |
+| `agents/` | Agent skills in `~/.agents` (see below) |
 | `claude/` | Claude Code config, symlinked into `~/.claude` (see below) |
 | `Brewfile` | Homebrew packages (`brew bundle`) |
 | `install.sh` | Symlinks dotfiles to $HOME |
@@ -44,6 +45,23 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 Deliberately **not** tracked: history, sessions, telemetry, caches, installed plugins (re-installed from `enabledPlugins` in `settings.json`), `hooks/herdr-agent-state.sh` (herdr overwrites it; reinstall via herdr), and third-party skills (`mcp-builder`, `visual-explainer`, etc.).
 
 Note: `claude/settings.json` has `/Users/riccardo.larosa` paths in `env.PATH`, the hook, and the statusline command. Edit them on a machine with a different username.
+
+## Agent skills (`~/.agents`)
+
+`~/.agents/skills` is the source for skills shared by Claude Code and pi (`~/.claude/skills/*` and `~/.pi/agent/skills/*` are symlinks into it).
+
+Tracked here: `agents/.skill-lock.json` (the manifest) and the skills not installed from a registry (`domain-modeling`, `grilling`, `wayfinder`). `install.sh` links them.
+
+The other skills are third-party and **not vendored**. Restore them from the manifest on a new machine:
+
+```bash
+jq -r '.skills | to_entries[] | "\(.value.source) \(.key)"' ~/.agents/.skill-lock.json |
+  while read -r src name; do npx -y skills add "$src" -g -s "$name" -y </dev/null; done
+```
+
+The `</dev/null` is required, otherwise `npx` swallows the rest of the loop's input and only the first skill installs.
+
+**Restore is not a pin.** `skills add` installs the latest upstream version, not the one in `skillFolderHash`, so restored skills can differ from the ones you had. If you need exact copies, vendor them into `agents/skills/`.
 
 ## Legacy (not actively used)
 

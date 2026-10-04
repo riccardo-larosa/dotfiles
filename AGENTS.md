@@ -11,6 +11,7 @@ dotfiles/
 ├── .functions        # Shell functions      -> ~/.functions
 ├── .tmux.conf        # tmux config          -> ~/.tmux.conf
 ├── zsh/              # .zshrc, .zprofile, .p10k.zsh -> ~/
+├── agents/           # ~/.agents: .skill-lock.json + authored skills (third-party skills are restored, not vendored)
 ├── claude/           # Claude Code config, linked into ~/.claude (settings.json, statusline, skills/)
 ├── Brewfile          # Homebrew packages (brew bundle)
 ├── install.sh        # Symlinks files into $HOME, backs up existing ones
@@ -27,6 +28,7 @@ dotfiles/
 | PATH for login shells | `zsh/.zprofile` |
 | Interactive shell config, plugins, nvm, uv | `zsh/.zshrc` |
 | Prompt appearance | `zsh/.p10k.zsh` (regenerate with `p10k configure`) |
+| Authored agent skill | `agents/skills/<name>/` (linked into `~/.agents/skills/`) |
 | Claude Code settings / statusline / own skills | `claude/` (edit here; `~/.claude` entries are symlinks) |
 | Add a brew package | `Brewfile`, then `brew bundle --file=Brewfile` |
 | Link a new file into $HOME | add a `link` line in `install.sh` |
@@ -46,4 +48,5 @@ dotfiles/
 - Letting installers append to `zsh/.zshrc` or `zsh/.zprofile` unreviewed. Installers for
   Codex, Antigravity and similar tools add PATH lines. Review, dedupe, or move them deliberately.
 - Tracking `~/.claude` runtime state or herdr-managed files (`hooks/herdr-agent-state.sh`). Only add files to `claude/` that we author.
+- Vendoring third-party skills into `agents/skills/`. Restore them via `.skill-lock.json` (see README); note restore installs latest upstream, not a pinned version.
 - Editing legacy dirs (`bash/`, `sublime/`, `iterm/`) unless asked.
