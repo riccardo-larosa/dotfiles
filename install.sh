@@ -10,6 +10,8 @@ link() {
   local src="$1"
   local dest="$2"
 
+  mkdir -p "$(dirname "$dest")"
+
   # If destination exists and isn't already the correct symlink, back it up
   if [ -e "$dest" ] && [ "$(readlink "$dest")" != "$src" ]; then
     mkdir -p "$BACKUP_DIR"
@@ -17,7 +19,9 @@ link() {
     echo "  backed up $(basename "$dest") → $BACKUP_DIR/"
   fi
 
-  ln -sf "$src" "$dest"
+  # -n: treat an existing symlink-to-dir as a file, so re-runs replace it
+  # instead of creating a link inside the target directory.
+  ln -sfn "$src" "$dest"
   echo "  ✓ $(basename "$dest")"
 }
 
