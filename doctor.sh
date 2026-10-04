@@ -63,7 +63,7 @@ if have brew; then
 else
   fail "brew not installed"
 fi
-for t in git zsh jq tmux rg gh; do
+for t in git zsh jq rg gh; do
   have "$t" && ok "$t" || warn "$t not on PATH"
 done
 

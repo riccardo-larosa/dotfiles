@@ -72,7 +72,6 @@ echo ""
 echo "Shared:"
 link "$DOTFILES/.aliases"    "$HOME/.aliases"
 link "$DOTFILES/.functions"  "$HOME/.functions"
-link "$DOTFILES/.tmux.conf"  "$HOME/.tmux.conf"
 
 # Zsh
 echo ""

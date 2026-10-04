@@ -5,7 +5,6 @@ tap "steipete/tap"
 
 # --- Shell ---
 brew "powerlevel10k"   # prompt theme (sourced via oh-my-zsh, see zsh/.zshrc)
-brew "tmux"            # see .tmux.conf
 
 # --- Dev tools ---
 brew "gh"
