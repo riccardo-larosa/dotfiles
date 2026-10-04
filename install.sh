@@ -41,5 +41,17 @@ link "$DOTFILES/zsh/.zshrc"     "$HOME/.zshrc"
 link "$DOTFILES/zsh/.zprofile"  "$HOME/.zprofile"
 link "$DOTFILES/zsh/.p10k.zsh"  "$HOME/.p10k.zsh"
 
+# Claude Code (only config we author; runtime state, plugins, and
+# herdr-managed hooks are intentionally not tracked)
+echo ""
+echo "Claude Code:"
+link "$DOTFILES/claude/settings.json"           "$HOME/.claude/settings.json"
+link "$DOTFILES/claude/statusline-command.sh"   "$HOME/.claude/statusline-command.sh"
+link "$DOTFILES/claude/usage-aggregator.py"     "$HOME/.claude/usage-aggregator.py"
+for skill in "$DOTFILES"/claude/skills/*/; do
+  name="$(basename "$skill")"
+  link "$DOTFILES/claude/skills/$name" "$HOME/.claude/skills/$name"
+done
+
 echo ""
 echo "Done! Restart your shell or run: source ~/.zshrc"
