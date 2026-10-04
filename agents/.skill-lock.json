@@ -105,9 +105,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/cursor/plugins.git",
       "skillPath": "pstack/skills/unslop/SKILL.md",
-      "skillFolderHash": "6161508c5c7959b156ff0e4e10b510863b51f9cc",
+      "skillFolderHash": "d5baa969e71c4ddb563412b0ec170fa3b05b6d6e",
       "installedAt": "2026-08-23T21:44:55.444Z",
-      "updatedAt": "2026-08-23T21:44:55.444Z"
+      "updatedAt": "2026-10-04T20:24:19.259Z"
     },
     "show-me": {
       "source": "humanlayer/skills",
