@@ -1,6 +1,6 @@
 # dotfiles
 
-My macOS dotfiles for zsh + powerlevel10k.
+My macOS dotfiles: zsh + powerlevel10k, tmux, Homebrew packages, plus Claude Code config and an agent-skills manifest.
 
 ## Install
 
@@ -12,10 +12,18 @@ cd ~/Projects/github/dotfiles
 
 The install script symlinks everything to `$HOME` and backs up any existing files to `~/.dotfiles_backup/`.
 
+On a fresh machine, do things in this order:
+
+1. Install Homebrew, then `brew bundle --file=Brewfile`.
+2. Install the rest of the [prerequisites](#prerequisites) (oh-my-zsh, plugins, uv, nvm).
+3. `./install.sh`, then open a new shell.
+4. Restore agent skills (see [Agent skills](#agent-skills-agents)).
+5. `./doctor.sh` to confirm everything is wired up.
+
 ## Health check
 
 ```bash
-./doctor.sh            # everything below; exit 1 if anything fails
+./doctor.sh            # all checks; exit 1 if anything fails
 ./install.sh --check   # just the symlinks
 ```
 
@@ -31,6 +39,7 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 - [MesloLGS Nerd Font](https://github.com/romkatv/powerlevel10k#meslo-nerd-font-patched-for-powerlevel10k)
 - [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md#oh-my-zsh)
 - [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md)
+- `jq` (used by `claude/statusline-command.sh`, `doctor.sh` and skill restore). macOS 15+ ships one; on older macOS run `brew install jq`
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python)
 - [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) (Node)
 
@@ -47,6 +56,8 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 | `agents/` | Agent skills manifest `.skill-lock.json` (see below) |
 | `claude/` | Claude Code config, symlinked into `~/.claude` (see below) |
 | `Brewfile` | Homebrew packages (`brew bundle`) |
+| `AGENTS.md` / `CLAUDE.md` | Repo map and conventions for AI assistants (`CLAUDE.md` imports `AGENTS.md`) |
+| `.gitignore` | Keeps `.DS_Store`, `.claude/settings.local.json`, secrets out of git |
 | `install.sh` | Symlinks dotfiles to $HOME (`--check` verifies without changing anything) |
 | `doctor.sh` | Read-only health check: links, prerequisites, config, repo hygiene |
 
