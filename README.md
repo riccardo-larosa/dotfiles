@@ -33,8 +33,17 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 | `.aliases` | Shared aliases (navigation, git, ls, etc.) |
 | `.functions` | Shell functions (`cdf` — cd to Finder window) |
 | `.tmux.conf` | tmux prefix remapped to C-a, mouse, 256 colors |
+| `claude/` | Claude Code config, symlinked into `~/.claude` (see below) |
 | `Brewfile` | Homebrew packages (`brew bundle`) |
 | `install.sh` | Symlinks dotfiles to $HOME |
+
+## Claude Code
+
+`install.sh` links `settings.json`, `statusline-command.sh`, `usage-aggregator.py` and the skills in `claude/skills/` into `~/.claude`.
+
+Deliberately **not** tracked: history, sessions, telemetry, caches, installed plugins (re-installed from `enabledPlugins` in `settings.json`), `hooks/herdr-agent-state.sh` (herdr overwrites it; reinstall via herdr), and third-party skills (`mcp-builder`, `visual-explainer`, etc.).
+
+Note: `claude/settings.json` has `/Users/riccardo.larosa` paths in `env.PATH`, the hook, and the statusline command. Edit them on a machine with a different username.
 
 ## Legacy (not actively used)
 
