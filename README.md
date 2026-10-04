@@ -67,7 +67,7 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 
 Deliberately **not** tracked: history, sessions, telemetry, caches, installed plugins (re-installed from `enabledPlugins` in `settings.json`), `hooks/herdr-agent-state.sh` (herdr overwrites it; reinstall via herdr), and third-party skills (`mcp-builder`, `visual-explainer`, etc.).
 
-Provenance and license notices for the skills in `claude/skills/` are in [`claude/NOTICES.md`](claude/NOTICES.md).
+Provenance and license notices for the skills in `claude/skills/` are in [`NOTICES.md`](NOTICES.md).
 
 Note: `claude/settings.json` has `/Users/riccardo.larosa` paths in `env.PATH`, the hook, and the statusline command. Edit them on a machine with a different username.
 

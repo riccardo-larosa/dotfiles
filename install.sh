@@ -81,7 +81,19 @@ link "$DOTFILES/zsh/.zshrc"     "$HOME/.zshrc"
 link "$DOTFILES/zsh/.zprofile"  "$HOME/.zprofile"
 link "$DOTFILES/zsh/.p10k.zsh"  "$HOME/.p10k.zsh"
 
-# Claude Code (only config we author; runtime state, plugins, and
+# pi (primary agent). Per-file links for extensions: ~/.pi/agent/extensions also holds
+# herdr-agent-state.ts, which herdr generates and overwrites, so it must stay untracked.
+# Never track auth.json, trust.json, models-store.json, sessions/, npm/ or git/.
+# Packages in settings.json are restored by pi itself (see README).
+echo ""
+echo "pi:"
+link "$DOTFILES/pi/settings.json" "$HOME/.pi/agent/settings.json"
+for ext in "$DOTFILES"/pi/extensions/*.ts; do
+  [ -e "$ext" ] || continue
+  link "$ext" "$HOME/.pi/agent/extensions/$(basename "$ext")"
+done
+
+# Claude Code (secondary; only config we author; runtime state, plugins, and
 # herdr-managed hooks are intentionally not tracked)
 echo ""
 echo "Claude Code:"

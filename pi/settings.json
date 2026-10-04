@@ -1,0 +1,19 @@
+{
+  "lastChangelogVersion": "1.0.0",
+  "packages": [
+    "npm:@plannotator/pi-extension",
+    "https://github.com/davebcn87/pi-autoresearch"
+  ],
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-fable-5",
+  "shellPath": "/bin/zsh",
+  "theme": "dark",
+  "enabledModels": [
+    "openai-codex/gpt-5.6-sol",
+    "openrouter/z-ai/glm-5.3",
+    "openrouter/qwen/qwen3.8-27b",
+    "anthropic/claude-opus-5-5",
+    "anthropic/claude-sonnet-5-5"
+  ],
+  "defaultThinkingLevel": "xhigh"
+}
