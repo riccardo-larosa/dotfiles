@@ -67,6 +67,31 @@ for t in git zsh jq tmux rg gh; do
   have "$t" && ok "$t" || warn "$t not on PATH"
 done
 
+# --- pi (primary agent) ------------------------------------------------------
+# Never call `pi list` here: it installs missing packages as a side effect.
+section "pi"
+have pi && ok "pi on PATH" || warn "pi not on PATH (npm i -g @earendil-works/pi-coding-agent)"
+PI_SETTINGS="$HOME/.pi/agent/settings.json"
+if have jq && [ -f "$PI_SETTINGS" ]; then
+  while IFS= read -r pkg; do
+    [ -z "$pkg" ] && continue
+    case "$pkg" in
+      npm:*)
+        name="${pkg#npm:}"; name="${name%@[0-9]*}"
+        dir="$HOME/.pi/agent/npm/node_modules/$name" ;;
+      https://github.com/*|git:github.com/*)
+        repo="${pkg#https://github.com/}"; repo="${repo#git:github.com/}"; repo="${repo%.git}"; repo="${repo%@*}"
+        dir="$HOME/.pi/agent/git/github.com/$repo" ;;
+      *) continue ;;
+    esac
+    [ -d "$dir" ] && ok "package installed: $pkg" || warn "package declared but not installed: $pkg (run: pi update --extensions)"
+  done < <(jq -r '.packages[]? | if type=="string" then . else .source // empty end' "$PI_SETTINGS")
+fi
+if have herdr; then
+  [ -f "$HOME/.pi/agent/extensions/herdr-agent-state.ts" ] && ok "herdr integration installed for pi" \
+    || warn "herdr is installed but its pi integration is not (run: herdr integration install pi)"
+fi
+
 # --- Config sanity -----------------------------------------------------------
 section "Config"
 for f in .zshrc .zprofile; do
@@ -102,8 +127,8 @@ if git grep -nIE '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0
 else
   ok "no obvious secrets in tracked files"
 fi
-if git ls-files | grep -qE '(^|/)(settings\.local\.json|\.env)$'; then
-  fail "a local-only file is tracked (settings.local.json or .env)"
+if git ls-files | grep -qE '(^|/)(settings\.local\.json|\.env|auth\.json|trust\.json|models-store\.json)$'; then
+  fail "a local-only or credential file is tracked (settings.local.json, .env, pi auth/trust/models-store)"
 else
   ok "no local-only files tracked"
 fi
