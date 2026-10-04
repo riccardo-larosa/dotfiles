@@ -12,6 +12,17 @@ cd ~/Projects/github/dotfiles
 
 The install script symlinks everything to `$HOME` and backs up any existing files to `~/.dotfiles_backup/`.
 
+## Health check
+
+```bash
+./doctor.sh            # everything below; exit 1 if anything fails
+./install.sh --check   # just the symlinks
+```
+
+`doctor.sh` checks that every link points into the repo (and flags files that replaced a link, which is how a tool rewriting `~/.claude/settings.json` shows up), looks for dangling skill links, confirms the things `.zshrc` sources unguarded exist, runs `brew bundle check`, validates the JSON and shell syntax, and scans tracked files for secrets and local-only files. It prints failures (`✗`, exit 1) and warnings (`!`, exit 0). It writes nothing, apart from Homebrew's own cache.
+
+It reads the link list from `install.sh`, so a new `link` line is checked automatically.
+
 ## Prerequisites
 
 - [Homebrew](https://brew.sh/), then install packages with `brew bundle --file=Brewfile`
@@ -36,7 +47,8 @@ The install script symlinks everything to `$HOME` and backs up any existing file
 | `agents/` | Agent skills manifest `.skill-lock.json` (see below) |
 | `claude/` | Claude Code config, symlinked into `~/.claude` (see below) |
 | `Brewfile` | Homebrew packages (`brew bundle`) |
-| `install.sh` | Symlinks dotfiles to $HOME |
+| `install.sh` | Symlinks dotfiles to $HOME (`--check` verifies without changing anything) |
+| `doctor.sh` | Read-only health check: links, prerequisites, config, repo hygiene |
 
 ## Claude Code
 

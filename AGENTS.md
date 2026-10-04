@@ -14,6 +14,7 @@ dotfiles/
 ├── agents/           # ~/.agents/.skill-lock.json only; skills are third-party and restored, not vendored
 ├── claude/           # Claude Code config, linked into ~/.claude (settings.json, statusline, skills/)
 ├── Brewfile          # Homebrew packages (brew bundle)
+├── doctor.sh         # Read-only health check (links, prereqs, config, repo hygiene)
 ├── install.sh        # Symlinks files into $HOME, backs up existing ones
 ├── bash/ sublime/ iterm/   # Legacy, not actively used
 └── .claude/          # Project-local Claude settings (settings.local.json is gitignored)
@@ -31,7 +32,8 @@ dotfiles/
 | Add/restore an agent skill | `npx skills add <repo> -g -a codex -s <name> -y` (see README; never omit `-a`) |
 | Claude Code settings / statusline / own skills | `claude/` (edit here; `~/.claude` entries are symlinks) |
 | Add a brew package | `Brewfile`, then `brew bundle --file=Brewfile` |
-| Link a new file into $HOME | add a `link` line in `install.sh` |
+| Link a new file into $HOME | add a `link` line in `install.sh` (`doctor.sh` checks it automatically via `install.sh --check`) |
+| Health check / verify setup | `./doctor.sh` (run after any change to `install.sh`, `zsh/`, `claude/`, `agents/`) |
 
 ## CONVENTIONS
 
@@ -40,6 +42,7 @@ dotfiles/
 - Use `$HOME`, not hardcoded `/Users/<name>` paths.
 - nvm is lazy-loaded for fast startup. Don't replace it with an eager `source nvm.sh`.
 - Commit small, one concern per commit.
+- `install.sh --check` and `doctor.sh` must stay read-only. New unguarded `source`/command lines in `zsh/.zshrc` should get a matching prerequisite check in `doctor.sh`.
 
 ## ANTI-PATTERNS
 
