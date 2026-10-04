@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Claude Code: per-machine/personal settings
+.claude/settings.local.json
+
+# Secrets and local overrides
+.env
+.envrc
+*.local
+!*.local.example
+
+# Editor/backup noise
+*.swp
+*~
