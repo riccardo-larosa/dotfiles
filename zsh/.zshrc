@@ -41,3 +41,6 @@ export PATH=~/.npm-global/bin:$PATH
 # uv (Python package manager)
 . "$HOME/.local/bin/env"
 eval "$(uv generate-shell-completion zsh)"
+
+# Added by Antigravity IDE
+export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
