@@ -57,7 +57,7 @@ It reads the link list from `install.sh`, so a new `link` line is checked automa
 | `.functions` | Shell functions (`cdf` — cd to Finder window, `skills-update` — install or update agent skills) |
 | `herdr/` | herdr config, symlinked into `~/.config/herdr` (see [herdr](#herdr)) |
 | `pi/` | pi settings and local extensions, symlinked into `~/.pi/agent` (see [pi](#pi)) |
-| `agents/` | Agent skills: the `.skill-lock.json` manifest and our own skills in `skills/` (see below) |
+| `agents/` | Shared agent instructions (`instructions.md`), the skills manifest `.skill-lock.json`, and our own skills in `skills/` (see below) |
 | `claude/` | Claude Code config, symlinked into `~/.claude` (secondary, see below) |
 | `NOTICES.md` | Provenance and license notices for third-party files |
 | `Brewfile` | Homebrew packages (`brew bundle`) |
@@ -85,7 +85,6 @@ The integrations that report agent state are generated, not tracked. Run `herdr 
 | Repo file | What it is |
 |-----------|------------|
 | `pi/settings.json` | Packages, default and enabled models, theme, shell |
-| `pi/AGENTS.md` | Global instructions for every project. It tells pi to read and apply the unslop skill |
 | `pi/extensions/context-status.ts` | Context-window bar on its own footer line |
 | `pi/extensions/statusline-pi.ts` | Custom footer: dir, branch, context, tok/s, cost, tool count, idle time, model. Adapted from luongnv89/pi-extensions, see [`NOTICES.md`](NOTICES.md) |
 
@@ -113,6 +112,20 @@ On a new machine run `pi update --extensions`. I tested this against a directory
 - `models.json`: your local llama.cpp provider. It has no secrets, but it's machine-specific.
 
 pi also reads skills from `~/.agents/skills`; see below.
+
+## Agent instructions (`agents/instructions.md`)
+
+`agents/instructions.md` holds the instructions that every agent follows. It applies the unslop skill and the ASD-STE100 Simplified Technical English rules to all prose.
+
+| Agent | How it loads the file |
+|---|---|
+| pi | `install.sh` links it to `~/.pi/agent/AGENTS.md` |
+| Codex | `install.sh` links it to `~/.codex/AGENTS.md` |
+| Claude Code | `claude/CLAUDE.md` imports `@~/.agents/instructions.md`, which `install.sh` links to the same file |
+
+Edit only `agents/instructions.md`. To add another agent, add one `link` line in `install.sh` for that agent's global instructions path.
+
+The STE100 rules come from the `ste100-writing-style` skill on your claude.ai account. Claude Code still loads that skill, so Claude sees the rules twice. Both copies say the same thing.
 
 ## Agent skills (`~/.agents`)
 
@@ -146,11 +159,11 @@ It runs `npx -y skills add <source> -g -a codex claude-code -s <name> -y` for ea
 
 Each agent updates its own copy. `doctor.sh` checks all three and warns if superpowers skills show up in the lock, where they would load twice.
 
-**unslop is applied through global instructions.** It comes from [cursor/plugins](https://github.com/cursor/plugins/tree/main/pstack/skills/unslop) and sets `disable-model-invocation: true`, so pi and Claude Code don't load it on their own. `pi/AGENTS.md` tells pi to read it, and `claude/CLAUDE.md` imports it with `@~/.agents/skills/unslop/SKILL.md`. Both point at the installed copy, so `skills-update unslop` is the only upkeep.
+**The shared instructions apply unslop.** unslop comes from [cursor/plugins](https://github.com/cursor/plugins/tree/main/pstack/skills/unslop) and sets `disable-model-invocation: true`, so pi and Claude Code don't load it on their own. `agents/instructions.md` tells pi and Codex to read it. `claude/CLAUDE.md` imports it with `@~/.agents/skills/unslop/SKILL.md`. Both point at the installed copy, so `skills-update unslop` is the only upkeep.
 
 ## Claude Code (also configured)
 
-Secondary to pi. `install.sh` links `claude/settings.json`, `CLAUDE.md` (global instructions), `statusline-command.sh` and `usage-aggregator.py` into `~/.claude`. Skills come from `~/.agents/skills` (see [Agent skills](#agent-skills-agents)).
+Secondary to pi. `install.sh` links `claude/settings.json`, `CLAUDE.md` (imports the [shared instructions](#agent-instructions-agentsinstructionsmd)), `statusline-command.sh` and `usage-aggregator.py` into `~/.claude`. Skills come from `~/.agents/skills` (see [Agent skills](#agent-skills-agents)).
 
 Not tracked: history, sessions, telemetry, caches, installed plugins (re-installed from `enabledPlugins` in `settings.json`), `hooks/herdr-agent-state.sh` (herdr overwrites it; reinstall with `herdr integration install claude`), and `skills/synced/`. Claude Code keeps your claude.ai account skills there and rewrites the folder on sync, so they stay Claude-only.
 

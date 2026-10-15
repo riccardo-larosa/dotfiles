@@ -12,8 +12,8 @@ dotfiles/
 ├── .functions        # Shell functions      -> ~/.functions
 ├── zsh/              # .zshrc, .zprofile, .p10k.zsh -> ~/
 ├── herdr/            # config.toml only -> ~/.config/herdr (rest of that dir is runtime state)
-├── pi/               # PRIMARY agent: settings.json, AGENTS.md (global) + extensions/*.ts, linked into ~/.pi/agent (per-file)
-├── agents/           # ~/.agents: .skill-lock.json (third-party skills, restored not vendored) + skills/ (our own)
+├── pi/               # PRIMARY agent: settings.json + extensions/*.ts, linked into ~/.pi/agent (per-file)
+├── agents/           # ~/.agents: instructions.md (every agent), .skill-lock.json (third-party skills, restored not vendored) + skills/ (our own)
 ├── claude/           # SECONDARY: Claude Code config, linked into ~/.claude (settings.json, CLAUDE.md, statusline)
 ├── NOTICES.md        # Provenance + license text for third-party files (pi extension, agents/skills)
 ├── Brewfile          # Homebrew packages (brew bundle)
@@ -36,7 +36,7 @@ dotfiles/
 | Add our own skill | `agents/skills/<name>/`, then `./install.sh` (links it into `~/.agents/skills` and `~/.claude/skills`) and a `NOTICES.md` entry if not original |
 | Restore or update agent skills | `skills-update [name...]` (in `.functions`), then commit the lock diff |
 | Superpowers | One plugin per agent, never the lock: Claude `enabledPlugins`, pi package in `pi/settings.json`, Codex `/plugins` (not `codex plugin add`, which Codex ignores) |
-| Global agent instructions | `pi/AGENTS.md` and `claude/CLAUDE.md` (both apply the unslop skill) |
+| Global agent instructions (writing rules: unslop + STE100) | `agents/instructions.md` only. pi and Codex load it as their global AGENTS.md; `claude/CLAUDE.md` imports it |
 | herdr config | `herdr/config.toml` (herdr writes it through the symlink; validate with `herdr config check`) |
 | herdr/agent integrations | `herdr integration install pi\|claude` (generated files, never tracked) |
 | pi settings (packages, models, theme) | `pi/settings.json` (edit here; pi also writes it through the symlink, so commit its diffs) |
@@ -74,4 +74,5 @@ dotfiles/
 - Putting skills anywhere but `~/.agents/skills`. `~/.pi/agent/skills` stays empty, and `~/.claude/skills` holds only symlinks into `~/.agents/skills` (plus `synced/`, which Claude Code manages for claude.ai account skills).
 - Adding `obra/superpowers` skills to the lock. Each agent gets superpowers from its own plugin, so lock copies would load twice. `doctor.sh` warns.
 - Editing an installed skill under `~/.agents/skills` (unslop included). The next update overwrites it.
+- Putting instructions meant for every agent into one agent's file (`claude/CLAUDE.md`, a new `pi/AGENTS.md`). Edit `agents/instructions.md`, which every agent loads.
 - Editing legacy dirs (`bash/`, `sublime/`, `iterm/`) unless asked.

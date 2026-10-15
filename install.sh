@@ -94,7 +94,6 @@ link "$DOTFILES/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 echo ""
 echo "pi:"
 link "$DOTFILES/pi/settings.json" "$HOME/.pi/agent/settings.json"
-link "$DOTFILES/pi/AGENTS.md"     "$HOME/.pi/agent/AGENTS.md"
 for ext in "$DOTFILES"/pi/extensions/*.ts; do
   [ -e "$ext" ] || continue
   link "$ext" "$HOME/.pi/agent/extensions/$(basename "$ext")"
@@ -108,6 +107,14 @@ link "$DOTFILES/claude/settings.json"           "$HOME/.claude/settings.json"
 link "$DOTFILES/claude/CLAUDE.md"               "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES/claude/statusline-command.sh"   "$HOME/.claude/statusline-command.sh"
 link "$DOTFILES/claude/usage-aggregator.py"     "$HOME/.claude/usage-aggregator.py"
+
+# Shared agent instructions: one file for every agent. pi and Codex load it as
+# their global AGENTS.md. claude/CLAUDE.md imports ~/.agents/instructions.md.
+echo ""
+echo "Agent instructions:"
+link "$DOTFILES/agents/instructions.md" "$HOME/.agents/instructions.md"
+link "$DOTFILES/agents/instructions.md" "$HOME/.pi/agent/AGENTS.md"
+link "$DOTFILES/agents/instructions.md" "$HOME/.codex/AGENTS.md"
 
 # Agent skills (~/.agents/skills, read by pi and Codex; Claude Code needs a link
 # per skill in ~/.claude/skills). Third-party skills are restored from the lock
